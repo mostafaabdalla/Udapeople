@@ -128,7 +128,7 @@ jobs:
           name: Analyze front-end
           command: |
              cd backend &&\
-             npm audit fix --audit-level=critical --force
+             npm audit --audit-level=critical
       - slack/notify:
           channel: C02B1RLJ8LS
           event: fail
@@ -145,7 +145,7 @@ jobs:
          name: Analyze back-end
          command: |
             cd backend &&\
-            npm audit --audit-level=critical
+            npm audit fix --audit-level=critical --force
       - slack/notify:
           channel: C02B1RLJ8LS
           event: fail
@@ -154,4 +154,4 @@ jobs:
 workflows:
   default:
     jobs:
-      - scan-backend
+      - scan-frontend
