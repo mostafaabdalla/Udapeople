@@ -128,5 +128,5 @@ jobs:
 workflows:
   default:
     jobs:
-      - scan-backend:
-      - scan-frontend:
+      - scan-backend
+      - scan-frontend
