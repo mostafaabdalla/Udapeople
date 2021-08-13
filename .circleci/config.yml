@@ -222,7 +222,7 @@ jobs:
           workflow_id: ${CIRCLE_WORKFLOW_ID}
 
       - slack/notify:
-#          branch_pattern: main
+  #        branch_pattern: main
           channel: C02B1RLJ8LS
           event: fail
           template: basic_fail_1
@@ -241,7 +241,7 @@ jobs:
           command: |
               apk add --update tar gzip ansible nodejs npm curl
               pip install awscli
-     - run:
+      - run:
           name: make sure .env file exists in workspace
           command: cat backend/.env
       - run:
