@@ -184,6 +184,7 @@ jobs:
                --query 'Reservations[*].Instances[*].PublicIpAddress' \
                --filters "Name=tag:project,Values=udapeople" \
                --output text >> .circleci/ansible/inventory.txt
+      - run: yum -y install tar gzip
       - persist_to_workspace:
           root: ~/
           paths:
