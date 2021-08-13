@@ -285,7 +285,41 @@ jobs:
               https://api.memstash.io/values/migration-${CIRCLE_WORKFLOW_ID}
             fi
             echo Key: migration-${CIRCLE_WORKFLOW_ID}
-
+  deploy-frontend:
+      docker:
+        - image: amazon/aws-cli
+      steps:
+        - checkout
+        - run:
+            name: Install dependencies
+            command: |
+              apk add --update tar gzip ansible nodejs npm curl
+        - run:
+            name: Get backend url
+            command: |
+              BACKEND_IP=$(curl -H "token: 71edd801-ba02-42ff-beca-915e0a246137" \
+                --request GET https://api.memstash.io/values/backend-url-${CIRCLE_WORKFLOW_ID})
+              export API_URL="http://${BACKEND_IP}:3030"
+              echo "${API_URL}"
+        - run:
+            name: Deploy frontend objects
+            command: |
+              cd frontend
+              npm audit fix
+              BACKEND_IP=$(curl -H "token: 71edd801-ba02-42ff-beca-915e0a246137" \
+                  --request GET https://api.memstash.io/values/backend-url-${CIRCLE_WORKFLOW_ID})
+              export API_URL="http://${BACKEND_IP}:3030"
+              echo "API_URL=${API_URL}"
+              echo API_URL=$API_URL > .env
+              echo ENVIRONMENT=development >> .env
+              cat ".env"
+              npm run build
+              cd dist
+              aws s3 sync . s3://udapeople-${CIRCLE_WORKFLOW_ID} --delete
+        - revert-migrations:
+            workflow_id: ${CIRCLE_WORKFLOW_ID}
+        - destroy-environment:
+            workflow_id: ${CIRCLE_WORKFLOW_ID}
 
 workflows:
   default:
@@ -304,5 +338,5 @@ workflows:
           requires: [test-frontend, test-backend, scan-frontend, scan-backend]
       - configure-infrastructure:
           requires: [deploy-infrastructure]
-      - run-migrations:
+      - deploy-frontend:
           requires: [configure-infrastructure]
