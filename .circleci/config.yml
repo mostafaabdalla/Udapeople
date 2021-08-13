@@ -174,6 +174,8 @@ jobs:
               --stack-name frontend-${CIRCLE_WORKFLOW_ID} \
               --parameter-overrides ID=${CIRCLE_WORKFLOW_ID}
 
+      - run: yum -y install tar gzip
+
       - run:
           name: Add back-end ip to ansible inventory
           command: |
@@ -211,12 +213,10 @@ jobs:
       - restore_cache:
           keys: [backend-build]
 
-      - run: yum -y install tar gzip
-
       - persist_to_workspace:
-          root: ~/
+          root: ~/project
           paths:
-            - project/.circleci/ansible/inventory.txt
+            - .circleci/ansible/inventory.txt
             - backend/
       - destroy-environment:
           workflow_id: ${CIRCLE_WORKFLOW_ID}
@@ -235,18 +235,18 @@ jobs:
           fingerprints:
             - "66:28:ef:e9:26:07:83:21:3c:2e:82:fc:fa:e7:bf:e6"
       - attach_workspace:
-          at: ~/
+          at: ~/project
       - run:
           name: Install dependencies
           command: |
               apk add --update tar gzip ansible nodejs npm curl
               pip install awscli
-#      - run:
-#          name: Check there is .env file at workspace.
-#          command: cat backend/.env
+     - run:
+          name: make sure .env file exists in workspace
+          command: cat backend/.env
       - run:
           name: Configure server
-#          no_output_timeout: 30m
+          no_output_timeout: 30m
           command: |
             cd .circleci/ansible
             ansible-playbook -i inventory.txt configure-server.yml
@@ -258,7 +258,7 @@ jobs:
     steps:
       - checkout
       - attach_workspace:
-          at: ~/
+          at: ~/project
       - restore_cache:
           keys: [backend-build]
       - run:
