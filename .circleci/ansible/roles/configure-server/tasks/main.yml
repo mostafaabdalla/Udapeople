@@ -32,10 +32,9 @@
   file:
     path: "~/home/ubuntu/backend"
     state: directory
-- name: set env vars
-  environment:
-        ENVIRONMENT: production
-
+#- name: set env vars
+#  environment:
+#        ENVIRONMENT: production
 #        TYPEORM_CONNECTION: postgres
 #        TYPEORM_ENTITIES: ./src/modules/domain/**/*.entity.ts
 #        TYPEORM_HOST: udapeople-prod.cgmijslxr7aa.us-east-1.rds.amazonaws.com

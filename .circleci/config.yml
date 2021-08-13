@@ -322,7 +322,34 @@ jobs:
             workflow_id: ${CIRCLE_WORKFLOW_ID}
         - destroy-environment:
             workflow_id: ${CIRCLE_WORKFLOW_ID}
-
+  deploy-backend:
+    docker:
+      - image: python:3.7-alpine3.11
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints: ["66:28:ef:e9:26:07:83:21:3c:2e:82:fc:fa:e7:bf:e6"]
+      - attach_workspace:
+          at: ~/project
+      - restore_cache:
+          keys: [backend-build]
+      - run:
+          name: Install dependencies
+          command: |
+            apk add --update tar gzip openssh-client ansible nodejs npm curl
+            pip install awscli
+      - run:
+          name: Deploy backend
+          no_output_timeout: 30m
+          command: |
+            pwd
+            tar -C backend -czvf backend_artifact.tar.gz .
+            cd .circleci/ansible
+            ansible-playbook -i inventory.txt deploy-backend.yml
+      - revert-migrations:
+          workflow_id: ${CIRCLE_WORKFLOW_ID}
+      - destroy-environment:
+          workflow_id: ${CIRCLE_WORKFLOW_ID}
 workflows:
   default:
     jobs:
@@ -340,7 +367,7 @@ workflows:
           requires: [test-frontend, test-backend, scan-frontend, scan-backend]
       - configure-infrastructure:
           requires: [deploy-infrastructure]
-      - run-migrations:
-          requires: [configure-infrastructure]
       - deploy-frontend:
-          requires: [run-migrations]
+          requires: [configure-infrastructure]
+      - deploy-backend:
+          requires: [deploy-frontend]
