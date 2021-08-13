@@ -256,10 +256,9 @@ jobs:
     docker:
       - image: circleci/node:13.8.0
     steps:
-      # Checkout code from git repo
       - checkout
       - attach_workspace:
-          at: ~/project
+          at: ~/
       - restore_cache:
           keys: [backend-build]
       - run:
