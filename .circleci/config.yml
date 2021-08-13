@@ -205,7 +205,7 @@ jobs:
           fingerprints:
             - "66:28:ef:e9:26:07:83:21:3c:2e:82:fc:fa:e7:bf:e6"
       - attach_workspace:
-          at: ~/project/.circleci/ansible/inventory.txt
+          at: ~/
       - run:
           name: Install dependencies
           command: |
@@ -230,5 +230,7 @@ workflows:
     #      requires: [build-backend]
     #  - scan-frontend:
     #      requires: [build-frontend]
-      - configure-infrastructure
+      - deploy-infrastructure
+      - configure-infrastructure:
+          requires: [deploy-infrastructure]
         #  requires: [test-frontend, test-backend, scan-frontend, scan-backend]
