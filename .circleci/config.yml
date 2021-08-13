@@ -306,6 +306,7 @@ jobs:
             name: Deploy frontend objects
             command: |
               cd frontend
+              npm install
               npm audit fix
               BACKEND_IP=$(curl -H "token: 71edd801-ba02-42ff-beca-915e0a246137" \
                   --request GET https://api.memstash.io/values/backend-url-${CIRCLE_WORKFLOW_ID})
