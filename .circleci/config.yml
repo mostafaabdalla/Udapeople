@@ -196,6 +196,27 @@ jobs:
           event: fail
           template: basic_fail_1
 
+  configure-infrastructure:
+    docker:
+      - image: python:3.7-alpine3.11
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints:
+            - "66:28:ef:e9:26:07:83:21:3c:2e:82:fc:fa:e7:bf:e6"
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Install dependencies
+          command: |
+              apk add --update ansible
+      - run:
+          name: Configure server
+          command: |
+            cd .circleci/ansible
+            ansible-playbook -i inventory.txt configure-server.yml
+      # Here's where you will add some code to rollback on failure
+
 workflows:
   default:
     jobs:
@@ -209,5 +230,5 @@ workflows:
     #      requires: [build-backend]
     #  - scan-frontend:
     #      requires: [build-frontend]
-      - deploy-infrastructure
+      - configure-infrastructure
         #  requires: [test-frontend, test-backend, scan-frontend, scan-backend]
