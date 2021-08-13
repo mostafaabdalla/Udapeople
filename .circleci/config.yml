@@ -57,7 +57,6 @@ jobs:
           channel: C02B1RLJ8LS
           event: fail
           template: basic_fail_1
-
   build-backend:
     docker:
       - image: circleci/node:13.8.0
@@ -98,7 +97,6 @@ jobs:
           channel: C02B1RLJ8LS
           event: fail
           template: basic_fail_1
-
   test-backend:
     docker:
       - image: circleci/node:13.8.0
@@ -135,7 +133,6 @@ jobs:
           channel: C02B1RLJ8LS
           event: fail
           template: basic_fail_1
-
   scan-backend:
     docker:
       - image: circleci/node:13.8.0
@@ -152,7 +149,6 @@ jobs:
           channel: C02B1RLJ8LS
           event: fail
           template: basic_fail_1
-
   deploy-infrastructure:
     docker:
       - image: amazon/aws-cli
@@ -184,18 +180,33 @@ jobs:
                --query 'Reservations[*].Instances[*].PublicIpAddress' \
                --filters "Name=tag:project,Values=udapeople" \
                --output text >> .circleci/ansible/inventory.txt
+      - run:
+          name: save backend url
+          command: |
+            curl -H "Content-Type: text/plain" -H "token: 71edd801-ba02-42ff-beca-915e0a246137" \
+              --request PUT \
+              --data `aws ec2 describe-instances \
+                --query 'Reservations[*].Instances[*].PublicIpAddress' \
+                --filters "Name=tag:project,Values=udapeople" \
+                --output text` \
+              https://api.memstash.io/values/backend-url
+    #          echo URL: https://api.memstash.io/values/backend-url
+    #          echo Token: 71edd801-ba02-42ff-beca-915e0a246137
+
       - run: yum -y install tar gzip
+
       - persist_to_workspace:
           root: ~/
           paths:
             - project/.circleci/ansible/inventory.txt
-    #  - destroy-environment
-    #      workflow_id: ${CIRCLE_WORKFLOW_ID}
+
+      - destroy-environment:
+          workflow_id: ${CIRCLE_WORKFLOW_ID}
+
       - slack/notify:
           channel: C02B1RLJ8LS
           event: fail
           template: basic_fail_1
-
   configure-infrastructure:
     docker:
       - image: python:3.7-alpine3.11
@@ -215,22 +226,58 @@ jobs:
           command: |
             cd .circleci/ansible
             ansible-playbook -i inventory.txt configure-server.yml
-      # Here's where you will add some code to rollback on failure
+
+      - destroy-environment:
+          workflow_id: ${CIRCLE_WORKFLOW_ID}
+  run-migrations:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - restore_cache:
+          keys: [backend-build]
+      - run:
+          name: Run migrations
+          command: |
+            cd backend &&\
+            npm run migrations | tee migrations-${CIRCLE_WORKFLOW_ID}.txt \
+            cat migrations-${CIRCLE_WORKFLOW_ID}.txt
+      - run:
+          name: Send migration results to memstash
+          command: |
+            cd backend
+            if grep -q "successfully" migrations-${CIRCLE_WORKFLOW_ID}.txt
+            then
+              curl -H "Content-Type: text/plain" -H "token: 71edd801-ba02-42ff-beca-915e0a246137" \
+              --request PUT \
+              --data '1' \
+              https://api.memstash.io/values/migration-${CIRCLE_WORKFLOW_ID}
+            else
+              curl -H "Content-Type: text/plain" -H "token: 71edd801-ba02-42ff-beca-915e0a246137" \
+              --request PUT \
+              --data '0' \
+              https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID}
+            fi
+            echo Key: migrations-${CIRCLE_WORKFLOW_ID}
+     - destroy-environment:
+         workflow_id: ${CIRCLE_WORKFLOW_ID}
 
 workflows:
   default:
     jobs:
-    #  - build-frontend
-    #  - build-backend
-    #  - test-frontend:
-    #      requires: [build-frontend]
-    #  - test-backend:
-    #      requires: [build-backend]
-    #  - scan-backend:
-    #      requires: [build-backend]
-    #  - scan-frontend:
-    #      requires: [build-frontend]
-      - deploy-infrastructure
+      - build-frontend
+      - build-backend
+      - test-frontend:
+          requires: [build-frontend]
+      - test-backend:
+          requires: [build-backend]
+      - scan-backend:
+          requires: [build-backend]
+      - scan-frontend:
+          requires: [build-frontend]
+      - deploy-infrastructure:
+          requires: [test-frontend, test-backend, scan-frontend, scan-backend]
       - configure-infrastructure:
           requires: [deploy-infrastructure]
-        #  requires: [test-frontend, test-backend, scan-frontend, scan-backend]
+      - run-migrations:
+          requires: [configure-infrastructure]
