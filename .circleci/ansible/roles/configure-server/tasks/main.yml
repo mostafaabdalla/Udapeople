@@ -21,6 +21,7 @@
     production: yes
     state: present
 - name: set environment variables
+  become: yes
   environment:
     ENVIRONMENT: production
     TYPEORM_CONNECTION: postgres

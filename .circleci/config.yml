@@ -221,12 +221,12 @@ jobs:
           name: Install dependencies
           command: |
               apk add --update ansible
+              pip install awscli
       - run:
           name: Configure server
           command: |
             cd .circleci/ansible
             ansible-playbook -i inventory.txt configure-server.yml
-
       - destroy-environment:
           workflow_id: ${CIRCLE_WORKFLOW_ID}
   run-migrations:
