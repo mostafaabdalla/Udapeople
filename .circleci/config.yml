@@ -20,20 +20,22 @@ commands:
   revert-migrations:
     description: Revert the last migration if successfully run in the current workflow.
     parameters:
-      # Add parameter here
+      workflow_id:
+        type: "string"
     steps:
       - run:
           name: Revert migrations
-          # Add when this will run
+          when: on_fail
           command: |
-            # Curl command here to see if there was a successful migration associated with the workflow id, store result in SUCCESS variable
-            SUCCESS = 1
+            SUCCESS=$(curl -H "token: 71edd801-ba02-42ff-beca-915e0a246137" \
+                --request GET \
+                https://api.memstash.io/values/migration-<< parameters.workflow_id >>)
+            echo $SUCCESS
             if(( $SUCCESS==1 ));
             then
-            #  cd ~/project/backend
-            #  npm install
-            #  Add revert code here. You can find this in the Getting Started section.
-              exit 1
+              cd backend
+              npm i
+              npm run migration:revert
             fi
 
 jobs:
@@ -236,6 +238,8 @@ jobs:
       - checkout
       - restore_cache:
           keys: [backend-build]
+      - attach_workspace:
+          at: ~/
       - run:
           name: Run migrations
           command: |
@@ -261,6 +265,7 @@ jobs:
             echo Key: migrations-${CIRCLE_WORKFLOW_ID}
       - destroy-environment:
          workflow_id: ${CIRCLE_WORKFLOW_ID}
+
 
 workflows:
   default:
