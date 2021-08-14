@@ -90,6 +90,7 @@ jobs:
           name: Test front-end
           command: |
              cd frontend
+             npm i
              npm audit fix
              npm run test
       - save_cache:                        #mmkn asheelo
@@ -110,6 +111,7 @@ jobs:
           name: Test back-end
           command: |
              cd backend
+             npm i
              npm audit fix
              npm run test
       - save_cache:                      #mmkn asheelo
