@@ -75,9 +75,6 @@ jobs:
       - save_cache:
           paths: [backend/node_modules]
           key: backend-build
-      - save_cache:                 #lesa msh sure
-          paths: [backend/dist]
-          key: backend-dist
       - slack/notify:
           channel: C02B1RLJ8LS
           event: fail
