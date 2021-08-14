@@ -1,5 +1,6 @@
 ---
 - name: copy backend files
+  become: true
   copy:
     src: /root/project/backend_artifact.tar.gz
     dest: ~/home/ubuntu
