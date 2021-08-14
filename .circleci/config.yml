@@ -112,7 +112,7 @@ jobs:
           command: |
              cd backend
              npm i
-             npm audit fix
+             npm audit fix --force
              npm run test
       - save_cache:                      #mmkn asheelo
           paths: [backend/node_modules]
