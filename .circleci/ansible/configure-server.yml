@@ -20,3 +20,4 @@
       raw: apt -y update && apt install -y python3
   roles:
     - configure-server
+    - configure-prometheus-node-exporter
