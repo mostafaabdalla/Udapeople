@@ -264,6 +264,7 @@ jobs:
           keys: [backend-build]
       - run:
           name: Run migrations
+          no_output_timeout: 30m
           command: |
             echo ENVIRONMENT=production > "backend/.env"
             echo TYPEORM_CONNECTION=postgres >> "backend/.env"
@@ -277,7 +278,6 @@ jobs:
             echo TYPEORM_PASSWORD=$TYPEORM_PASSWORD >> "backend/.env"
             echo TYPEORM_DATABASE=$TYPEORM_DATABASE >> "backend/.env"
             cd backend
-            npm i
             npm run migrations > migrations-${CIRCLE_WORKFLOW_ID:0:7}.txt
             cat migrations-${CIRCLE_WORKFLOW_ID:0:7}.txt
       - run:
