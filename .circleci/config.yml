@@ -339,8 +339,7 @@ jobs:
     steps:
       - checkout
       - add_ssh_keys:
-          fingerprints:
-            - "66:28:ef:e9:26:07:83:21:3c:2e:82:fc:fa:e7:bf:e6"
+          fingerprints: ["66:28:ef:e9:26:07:83:21:3c:2e:82:fc:fa:e7:bf:e6"]
       - attach_workspace:
           at: ~/
       - restore_cache:
