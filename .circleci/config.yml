@@ -297,6 +297,71 @@ jobs:
               https://api.memstash.io/values/migrations-${CIRCLE_WORKFLOW_ID:0:7}
             fi
 #            echo Key: migrations-${CIRCLE_WORKFLOW_ID:0:7}
+  deploy-frontend:
+      docker:
+        - image: python:3.7-alpine3.11
+      steps:
+        - checkout
+        - attach_workspace:
+          at: ~/
+        - run:
+            name: Install dependencies
+            command: |
+              apk add --update tar gzip ansible nodejs npm curl
+              pip install awscli
+        - run:
+            name: Get backend url
+            command: |
+              BACKEND_IP=$(curl -H "token: 71edd801-ba02-42ff-beca-915e0a246137" \
+                --request GET https://api.memstash.io/values/backend-url-${CIRCLE_WORKFLOW_ID:0:7})
+              export API_URL="http://${BACKEND_IP}:3030"
+              echo "${API_URL}"
+              echo ENVIRONMENT=production > "frontend/.env"
+              echo NODE_ENV=production >> "frontend/.env"
+              echo API_URL=$API_URL >> "frontend/.env"
+        - run:
+            name: Deploy frontend objects
+            command: |
+              cd frontend
+              cat .env
+              npm install
+              npm audit fix
+              npm run build
+              cd dist
+              aws s3 sync . s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --delete
+        - revert-migrations:
+            workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
+        - destroy-environment:
+            workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
+  deploy-backend:
+    docker:
+      - image: python:3.7-alpine3.11
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints:
+            - "66:28:ef:e9:26:07:83:21:3c:2e:82:fc:fa:e7:bf:e6"
+      - attach_workspace:
+          at: ~/
+      - restore_cache:
+          keys: [backend-build]
+      - run:
+          name: Install dependencies
+          command: |
+            apk add --update tar gzip ansible nodejs npm curl openssh-client
+            pip install awscli
+      - run:
+          name: Deploy backend
+          no_output_timeout: 30m
+          command: |
+            pwd
+            tar -C backend -czvf backend_artifact.tar.gz .
+            cd .circleci/ansible
+            ansible-playbook -i inventory.txt deploy-backend.yml
+      - revert-migrations:
+          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
+      - destroy-environment:
+          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
 
 workflows:
   default:
@@ -317,3 +382,7 @@ workflows:
           requires: [deploy-infrastructure]
       - run-migrations:
           requires: [configure-infrastructure]
+      - deploy-frontend:
+          requires: [run-migrations]
+      - deploy-backend:
+          requires: [run-migrations]
