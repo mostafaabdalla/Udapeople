@@ -93,8 +93,8 @@ jobs:
           name: Test front-end
           command: |
              cd frontend
-             npm install
-             npm audit fix
+#             npm install
+#             npm audit fix
              npm run test
       - save_cache:                        #mmkn asheelo
           paths: [frontend/node_modules]
@@ -114,7 +114,7 @@ jobs:
           name: Test back-end
           command: |
              cd backend
-             npm audit fix
+#             npm audit fix
              npm run test
       - save_cache:                      #mmkn asheelo
           paths: [backend/node_modules]
