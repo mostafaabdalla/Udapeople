@@ -1,5 +1,5 @@
 ---
-- name: Update apt packages.
+- name: Update apt packages
   become: yes
   apt:
     update_cache: yes
@@ -7,7 +7,7 @@
   become: yes
   apt:
     upgrade: "yes"
-- name: Remove dependencies that are no longer required.
+- name: Remove dependencies that are no longer required
   become: yes
   apt:
     autoremove: "yes"
@@ -24,7 +24,3 @@
     global: yes
     production: yes
     state: present
-- name: Create dist directory.
-  file:
-    path: "~/home/ubuntu/backend"
-    state: directory
