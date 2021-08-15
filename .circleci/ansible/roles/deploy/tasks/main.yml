@@ -2,11 +2,11 @@
 - name: move files to backend
   copy:
     src: /home/backend.tar.gz
-    dest: /home/ubuntu
+    dest: /home/ubuntu/backend.tar.gz
 
 - name: "install package dependencies"
   shell: |
-    cd /home/ubuntu
+    cd /home/ubuntu/
     tar xzvf backend.tar.gz
     mv home/circleci/project/backend .
     cd backend
