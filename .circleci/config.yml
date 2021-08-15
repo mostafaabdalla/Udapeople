@@ -358,9 +358,9 @@ jobs:
           command: |
             pwd
             ls
-            cd /backend
+            cd backend
             ls
-            tar czf backend.tar.gz -P /home/circleci/project/backend/dist
+            tar czf backend.tar.gz -P /root/project/backend/dist
             cd -
             ansible-playbook -i inventory.txt deploy-backend.yml
       - revert-migrations:
