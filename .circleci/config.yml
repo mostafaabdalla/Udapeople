@@ -354,7 +354,7 @@ jobs:
           no_output_timeout: 30m
           command: |
             pwd
-            tar -C backend -czvf backend_artifact.tar.gz .
+            tar backend -czvf backend_artifact.tar.gz .
             cd .circleci/ansible
             ansible-playbook -i inventory.txt deploy-backend.yml
       - revert-migrations:
