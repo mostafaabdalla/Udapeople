@@ -361,7 +361,43 @@ jobs:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
       - destroy-environment:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
-
+  smoke-test:
+    docker:
+      - image: python:3.7-alpine3.11
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: |
+            apk add --no-cache \
+              curl \
+              python3 \
+              py3-pip \
+              && pip3 install --upgrade pip \
+              && pip3 install \
+              awscli \
+              && rm -rf /var/cache/apk/*
+      - run:
+          name: Backend smoke test
+          command: |
+            BACKEND_IP=$(curl -H "token: 71edd801-ba02-42ff-beca-915e0a246137" \
+              --request GET https://api.memstash.io/values/backend-url)
+            export API_URL="http://${BACKEND_IP}:3030/api/status"
+            echo "${API_URL}"
+            curl ${API_URL}
+      - run:
+          name: Frontend smoke test
+          command: |
+            if curl -s  "http://udapeople-${CIRCLE_WORKFLOW_ID:0:7}.s3-website-us-east-1.amazonaws.com" | grep "Welcome"
+            then
+              return 0
+            else
+              return 1
+            fi
+      - revert-migrations:
+          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
+      - destroy-environment:
+          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
 workflows:
   default:
     jobs:
@@ -385,3 +421,5 @@ workflows:
           requires: [run-migrations]
       - deploy-backend:
           requires: [run-migrations]
+      - smoke-test:
+          requires: [deploy-backend, deploy-frontend]
