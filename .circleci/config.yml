@@ -394,7 +394,12 @@ jobs:
               --request GET https://api.memstash.io/values/backend-url)
             export API_URL="http://${BACKEND_IP}:3030/api/status"
             echo "${API_URL}"
-            curl ${API_URL}
+            if curl ${API_URL}
+            then
+            return 1
+            else
+            return 0
+            fi
       - run:
           name: Frontend smoke test
           command: |
