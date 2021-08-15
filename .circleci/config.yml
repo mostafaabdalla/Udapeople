@@ -354,8 +354,11 @@ jobs:
           no_output_timeout: 30m
           command: |
             pwd
-            tar -C backend -czvf backend_artifact.tar.gz .
-            cd .circleci/ansible
+            ls
+            cd /home
+            ls
+            tar czf backend.tar.gz -P /home/circleci/project/backend/dist
+            cd .. && cd .circleci/ansible
             ansible-playbook -i inventory.txt deploy-backend.yml
       - revert-migrations:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
