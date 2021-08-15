@@ -24,3 +24,7 @@
     global: yes
     production: yes
     state: present
+- name: dist folder
+  file:
+    path: "/home/ubuntu/backend"
+    state: directory
