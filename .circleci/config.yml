@@ -343,7 +343,7 @@ jobs:
       - attach_workspace:
           at: ~/
       - restore_cache:
-          keys: [backend-build]
+          keys: [backend-dist]
       - run:
           name: Install dependencies
           command: |
@@ -351,7 +351,7 @@ jobs:
             pip install awscli
       - run:
           name: Deploy backend
-          no_output_timeout: 50m
+          no_output_timeout: 30m
           command: |
             cd /home
             tar czf backend_artifact.tar.gz -P /home/circleci/project/backend/dist
