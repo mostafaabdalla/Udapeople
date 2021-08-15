@@ -322,7 +322,10 @@ jobs:
         - run:
             name: Deploy frontend objects
             command: |
+              pwd
+              ls
               cd frontend
+              ls
               cat .env
               npm install
               npm audit fix
@@ -358,6 +361,7 @@ jobs:
             cd /home
             ls
             tar czf backend.tar.gz -P /home/circleci/project/backend/dist
+            cd -
             ansible-playbook -i inventory.txt deploy-backend.yml
       - revert-migrations:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
