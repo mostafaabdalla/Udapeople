@@ -360,8 +360,9 @@ jobs:
             ls
             cd backend
             ls
-            tar czf backend.tar.gz -P /root/project/backend/dist
             cd -
+            cd /home/circleci/project/backend/dist
+            ls
             ansible-playbook -i inventory.txt deploy-backend.yml
       - revert-migrations:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
