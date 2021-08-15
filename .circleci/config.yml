@@ -353,8 +353,8 @@ jobs:
           name: Deploy backend
           no_output_timeout: 50m
           command: |
-            pwd
-            tar -C backend -czvf backend_artifact.tar.gz .
+            cd /home
+            tar czf backend_artifact.tar.gz -P /home/circleci/project/backend/dist
             cd .circleci/ansible
             ansible-playbook -i inventory.txt deploy-backend.yml
       - revert-migrations:

@@ -2,7 +2,7 @@
 - name: copy backend files
   become: true
   copy:
-    src: /root/project/backend_artifact.tar.gz
+    src: /home/backend_artifact.tar.gz
     dest: /home/ubuntu/backend_artifact.tar.gz
 
 - name: install dependencies
@@ -13,5 +13,4 @@
     cd backend/
     npm install && npm run build
     npm audit fix && npm run build
-    cd dist
     pm2 start npm --name backend -- start
