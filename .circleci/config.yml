@@ -435,14 +435,33 @@ jobs:
               --template-file .circleci/files/cloudfront.yml \
               --tags project=udapeople \
               --stack-name udapeople-prod \
-              --region ${AWS_DEFAULT_REGION} \
-              --parameter-overrides WorkflowID=${CIRCLE_WORKFLOW_ID:0:7} \
-
+              --parameter-overrides WorkflowID=${CIRCLE_WORKFLOW_ID:0:7}
       - revert-migrations:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
       - destroy-environment:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
-
+  cleanup:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run:
+          name: Remove old stacks and files
+          command: |
+            export OLD_WORKFLOW_ID=$(curl -H "token: 71edd801-ba02-42ff-beca-915e0a246137" --request GET \
+              https://api.memstash.io/values/old-workflow-id)
+            export STACKS=($(aws cloudformation list-stacks --query "StackSummaries[*].StackName" \
+              --stack-status-filter CREATE_COMPLETE --no-paginate --output text))
+            echo Old Workflow Id:${OLD_WORKFLOW_ID}
+            echo "New id:${CIRCLE_WORKFLOW_ID:0:7}"
+            echo ${STACKS}
+            aws s3 rm s3://udapeople-${OLD_WORKFLOW_ID} --recursive
+            aws cloudformation delete-stack --stack-name backend-${OLD_WORKFLOW_ID}
+            aws cloudformation delete-stack --stack-name frontend-${OLD_WORKFLOW_ID}
+      - revert-migrations:
+          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
+      - destroy-environment:
+          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
 
 workflows:
   default:
@@ -471,3 +490,5 @@ workflows:
           requires: [deploy-backend, deploy-frontend]
       - cloudfront-update:
           requires: [smoke-test]
+      - cleanup:
+          requires: [cloudfront-update]
