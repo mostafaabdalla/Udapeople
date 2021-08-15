@@ -413,6 +413,36 @@ jobs:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
       - destroy-environment:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
+  cloudfront-update:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run:
+          name: Update cloudfront distribution
+          command: |
+            export OLD_WORKFLOW_ID=$(aws cloudformation list-exports --query "Exports[?Name==\`WorkflowID\`].Value" \
+              --no-paginate --output text)
+            export STACKS=($(aws cloudformation list-stacks --query "StackSummaries[*].StackName" \
+              --stack-status-filter CREATE_COMPLETE --no-paginate --output text))
+            curl -H "Content-Type: text/plain" -H "token: 71edd801-ba02-42ff-beca-915e0a246137" \
+              --request PUT --data "${OLD_WORKFLOW_ID}" \
+              https://api.memstash.io/values/old-workflow-id
+            echo Old Workflow Id: ${OLD_WORKFLOW_ID}
+            echo Actual Workflow Id: ${CIRCLE_WORKFLOW_ID:0:7}
+            echo Stacks available: ${STACKS}
+            aws cloudformation deploy \
+              --template-file .circleci/files/cloudfront.yml \
+              --stack-name udapeople-prod \
+              --region ${AWS_DEFAULT_REGION} \
+              --parameter-overrides WorkflowID=${CIRCLE_WORKFLOW_ID:0:7} \
+              --tags project=udapeople
+      - revert-migrations:
+          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
+      - destroy-environment:
+          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
+
+
 workflows:
   default:
     jobs:
@@ -438,3 +468,7 @@ workflows:
           requires: [run-migrations]
       - smoke-test:
           requires: [deploy-backend, deploy-frontend]
+      - cloudfront-update:
+          requires: [smoke-test]
+      - cleanup:
+          requires: [cloudfront-update]
