@@ -343,7 +343,7 @@ jobs:
       - attach_workspace:
           at: ~/
       - restore_cache:
-          keys: [backend-build]
+          keys: [backend-dist]
       - run:
           name: Install dependencies
           command: |
@@ -358,8 +358,8 @@ jobs:
             cd /home
             ls
             tar czf backend.tar.gz -P /home/circleci/project/backend/dist
-            cd .. && cd .circleci/ansible
-            ansible-playbook -i inventory.txt deploy-backend.yml
+            ansible-playbook -i .circleci/ansible/inventory.txt \
+            .circleci/ansible/deploy-backend.yml
       - revert-migrations:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
       - destroy-environment:
@@ -420,8 +420,8 @@ workflows:
           requires: [deploy-infrastructure]
       - run-migrations:
           requires: [configure-infrastructure]
-      - deploy-frontend:
-          requires: [run-migrations]
+#      - deploy-frontend:
+#          requires: [run-migrations]
       - deploy-backend:
           requires: [run-migrations]
 #      - smoke-test:
