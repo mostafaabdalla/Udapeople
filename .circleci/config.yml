@@ -407,7 +407,7 @@ jobs:
             then
               return 1
             else
-              return 1
+              return 0
             fi
       - revert-migrations:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
