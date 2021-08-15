@@ -357,13 +357,15 @@ jobs:
           no_output_timeout: 30m
           command: |
             cd /home
-            ls
+            ls /home/circleci/project/backend/
             tar czf backend.tar.gz -P /home/circleci/project/backend/dist
 
       - run:
           name: Deploy backend
           command: |
-            ansible-playbook -i inventory.txt deploy-backend.yml
+            ansible-playbook \
+              -i .circleci/ansible/inventory.txt \
+              .circleci/ansible/deploy-backend.yml
       - revert-migrations:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
       - destroy-environment:
