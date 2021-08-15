@@ -415,14 +415,9 @@ jobs:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
   cloudfront-update:
     docker:
-      - image: python:3.7-alpine3.11
+      - image: amazon/aws-cli
     steps:
       - checkout
-      - run:
-          name: Install dependencies
-          command: |
-            apk add --update py3-pip && pip3 install --upgrade pip && pip3 install awscli
-            apk add --update curl
       - run:
           name: Update cloudfront distribution
           command: |
@@ -440,7 +435,8 @@ jobs:
               --template-file .circleci/files/cloudfront.yml \
               --tags project=udapeople \
               --stack-name udapeople-prod \
-              --parameter-overrides WorkflowID=${CIRCLE_WORKFLOW_ID:0:7}
+              --region ${AWS_DEFAULT_REGION} \
+              --parameter-overrides WorkflowID=${CIRCLE_WORKFLOW_ID:0:7} \
 
       - revert-migrations:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
