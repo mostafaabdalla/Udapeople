@@ -93,7 +93,7 @@ jobs:
              npm i
              npm audit fix
              npm run test
-      - save_cache:                        #mmkn asheelo
+      - save_cache:
           paths: [frontend/node_modules]
           key: frontend-build
       - slack/notify:
@@ -113,7 +113,7 @@ jobs:
              cd backend
              npm i
              npm run test
-      - save_cache:                      #mmkn asheelo
+      - save_cache:
           paths: [backend/node_modules]
           key: backend-build
       - slack/notify:
@@ -133,7 +133,7 @@ jobs:
              cd frontend
              npm install
              npm audit fix --audit-level=critical --force
-      - save_cache:                                       #mmkn asheelo
+      - save_cache:
           paths: [frontend/node_modules]
           key: frontend-build
       - slack/notify:
@@ -152,7 +152,7 @@ jobs:
          command: |
             cd backend
             npm audit fix --audit-level=critical --force
-      - save_cache:                                     #mmkn asheelo
+      - save_cache:
           paths: [backend/node_modules]
           key: backend-build
       - slack/notify:
@@ -205,9 +205,6 @@ jobs:
                 --filters "Name=tag:project,Values=udapeople" \
                 --output text` \
               https://api.memstash.io/values/backend-url
-#              echo URL: https://api.memstash.io/values/backend-url
-#              echo Token: 71edd801-ba02-42ff-beca-915e0a246137
-
       - persist_to_workspace:
           root: ~/
           paths:
@@ -296,7 +293,6 @@ jobs:
               --data '0' \
               https://api.memstash.io/values/migrations-${CIRCLE_WORKFLOW_ID:0:7}
             fi
-#            echo Key: migrations-${CIRCLE_WORKFLOW_ID:0:7}
   deploy-frontend:
       docker:
         - image: python:3.7-alpine3.11
